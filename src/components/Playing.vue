@@ -32,13 +32,12 @@
 
                 <div class="SongsLrc">
                     <ul ref='ulLrc'>
-                      
                     </ul>
                 </div>
-                
+                                                
                 <div class="Player-bottom">
                     <span><i class="iconfont icon-xunhuanbofang"></i></span>
-                    <span><i class="iconfont icon-diyiyeshouyeshangyishou" @click="prev()"></i></span>
+                    <span><i class="iconfont icon-diyiyeshouyeshangyishou" @click="prve()"></i></span>
                     <span>
                         <i class="iconfont icon-bofang1" @click="vuetouch()" ref="ib"></i>
                     </span><!--全屏播放界面的播放暂停键-->
@@ -71,10 +70,11 @@ export default {
     };
   },
   computed: {
-    ...mapState(["pid", "songName", "singer", "imgs",'lrc']) //歌曲数据
+    ...mapState(["pid", "songName", "singer", "imgs",'lrc','count','id']) //歌曲数据
   },
   store,
   methods: {
+    ...mapMutations(['postId']),
     vuetouch() {
       if (this.flag) {
         console.log(this.$refs.audio);
@@ -97,63 +97,83 @@ export default {
         that.$refs.ulLrc.innerHTML=''
         console.log(that.$refs.ulLrc)
         this.$refs.playing.style.display = "block";
-        let lrcs=store.state.lrc
-        console.log(lrcs)
-        let arr=new Array()//时间
+        this.setLrc(store.state.time,store.state.lrc);
+    },
 
-        let now =null
-
-        let arrlrc=new Array()//处理时间
-        var txt=null
-
-        for(var i=0;i<lrcs.length;i++){
-            
-                    txt=lrcs[i].split(']')
-                    var lis=document.createElement('li')
-                    lis.innerHTML=txt[1]
-                    that.$refs.ulLrc.appendChild(lis)
-                    arr[i]=txt[0]
-
-            }
-        // console.log(lrcs)
-        // console.log(arr)
-        for(var i=0;i<arr.length;i++){
-        arrlrc[i]=arr[i].slice(0,2)*60+arr[i].slice(3,7)*1//
+    setLrc(arr,lrc){
+        this.$refs.ulLrc.innerHTML='';
+        let arrlrc=[];
+        for(let j=0;j<lrc.length;j++){
+            let lis=document.createElement('li')
+            lis.innerHTML=lrc[j];
+            this.$refs.ulLrc.appendChild(lis)
         }
-        // console.log(arrlrc)
+        for(var i=0;i<arr.length;i++){
+            arrlrc.push(arr[i].slice(0,2)*60+arr[i].slice(3,7)*1)//
+        }
+        let that=this;
         this.$refs.audio.addEventListener('timeupdate',function(){
 
-            let adtime=this.currentTime
-            // console.log(adtime)
-            for(var i=0;i<arrlrc.length;i++){
-                if(adtime>=arrlrc[i]){
-                    // arr[i].style
-                    // console.log(i)
-                for(var j=0;j<arrlrc.length;j++){
+        let adtime=this.currentTime
+        // console.log(adtime)
+        for(var i=0;i<arrlrc.length;i++){
+            if(adtime>=arrlrc[i]){
+                // arr[i].style
+                // console.log(i)
+                for(var j=0; j< arrlrc.length ;j++){
                     that.$refs.ulLrc.querySelectorAll('li')[j].style.color='rgb(244, 244, 244)'
                 }
-                that.$refs.ulLrc.querySelectorAll('li')[i].style.color='#97ffb5'
-                that.$refs.ulLrc.style.top=200-that.$refs.ulLrc.querySelectorAll('li')[i].offsetTop+'px'
-                }else{
-                    // console.log('0000000')
-                }
+            that.$refs.ulLrc.querySelectorAll('li')[i].style.color='#97ffb5'
+            that.$refs.ulLrc.style.top=200-that.$refs.ulLrc.querySelectorAll('li')[i].offsetTop+'px'
+            }else{
+                // console.log('0000000')
             }
-            })
-    
-        },
+        }
+        })
+    },
         back() {
         this.$refs.playing.style.display = "none";
+        
         },
         /* this.$refs.audio.addEventListener('timeupdate',function(){
 
         }) */
+        // sx(){
+        //     for(let k = 0; k < store.state.ids.length; k++){
+        //         if(ids[k] == id){
+        //             store.state.count = k;
+        //         }
+        //     }
+        //      this.pid= store.ids[store.state.count]
+        // },
         next(){
-            for(let k = 0; k < ids.length; k++){
-                if(ids[k] == id){
-                    count = k;
+            console.log(store.state.ids)
+            
+            for(let k = 0; k < store.state.ids.length; k++){
+                if(store.state.ids[k] == store.state.id){
+                    store.state.count = k;
                 }
             }
+            store.state.count ++
+            store.state.id=store.state.ids[store.state.count]
+            this.postId(store.state.id)
+            this.setLrc(store.state.time,store.state.lrc);
+        },
+        prve(){
+            
+           for(let k = 0; k < store.state.ids.length; k++){
+                if(store.state.ids[k] == store.state.id){
+                    store.state.count = k;
+                     console.log(k)
 
+                }
+            }
+            store.state.count --
+            console.log(store.state.ids[store.state.count])
+            store.state.id=store.state.ids[store.state.count]
+            this.postId(store.state.id);
+            this.setLrc(store.state.time[store.state.count],store.state.lrc);
+            // this.pid= store.state.ids[store.state.count]
         }
     }
 
